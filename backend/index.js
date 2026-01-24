@@ -1,7 +1,9 @@
 require('dotenv').config();
 const express = require('express');
+const PORT = process.env.PORT || 5000;
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bootstrapAdmin = require("./utils/bootstrapAdmin");
 
 const app = express();
 
@@ -22,15 +24,21 @@ app.get('/', (req, res) => {
     res.send('Gaurav Collection API is running...');
 });
 
-// Database Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/gaurav-collection';
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('✅ MongoDB connected successfully'))
-    .catch(err => console.error('❌ MongoDB connection error:', err));
 
-await bootstrapAdmin();
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
-});
+const startServer = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log("✅ MongoDB connected");
+
+        await bootstrapAdmin();
+
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error("❌ Server startup failed:", err.message);
+        process.exit(1);
+    }
+};
+
+startServer();
