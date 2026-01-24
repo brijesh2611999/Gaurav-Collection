@@ -7,7 +7,10 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*', // Allow specific frontend or all if not set
+    credentials: true,
+}));
 
 // Routes
 app.use('/api/images', require('./routes/imageRoutes'));
