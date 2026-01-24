@@ -60,43 +60,44 @@ const sendOtpEmail = async (email, otp) => {
 // Register User
 exports.registerUser = async (req, res) => {
     try {
-        console.log('📝 Registration start:', req.body.email);
+        console.log('📝 [DEBUG] Registration started for:', req.body?.email);
         const { name, email, password } = req.body;
 
         if (!email || !password || !name) {
-            console.log('⚠️ Missing fields');
+            console.log('⚠️ [DEBUG] Validation failed: Missing fields');
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
         const normalizedEmail = email.toLowerCase();
-        console.log('🔍 Checking if user exists:', normalizedEmail);
+        console.log('🔍 [DEBUG] Checking user existence for:', normalizedEmail);
         const userExists = await User.findOne({ email: normalizedEmail });
 
         if (userExists) {
             if (!userExists.isVerified) {
-                console.log('🔄 User exists but not verified, updating and resending OTP');
+                console.log('🔄 [DEBUG] User exists but unverified. Updating...');
                 const otp = Math.floor(100000 + Math.random() * 900000).toString();
                 userExists.otp = otp;
                 userExists.otpExpires = Date.now() + 10 * 60 * 1000;
                 userExists.name = name;
                 userExists.password = password;
                 await userExists.save();
-                console.log('✅ User updated, sending email');
+                console.log('✅ [DEBUG] User updated/saved in DB');
 
                 try {
                     await sendOtpEmail(normalizedEmail, otp);
+                    console.log('📧 [DEBUG] OTP Email (re)sent');
                 } catch (emailErr) {
-                    console.error('📧 Email resend failed but continuing:', emailErr.message);
+                    console.error('❌ [DEBUG] Email resend failed:', emailErr.message);
                 }
 
                 return res.status(200).json({ message: 'OTP sent to email', email: normalizedEmail, requireOtp: true });
             }
-            console.log('🚫 User already exists');
+            console.log('🚫 [DEBUG] User already exists and verified');
             return res.status(400).json({ message: 'User already exists' });
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log('🆕 Creating new user doc...');
+        console.log('🆕 [DEBUG] Creating new User document...');
 
         const user = new User({
             name,
@@ -107,29 +108,29 @@ exports.registerUser = async (req, res) => {
             isVerified: false
         });
 
+        console.log('💾 [DEBUG] Executing user.save()...');
         await user.save();
-        console.log('✅ User saved to DB');
+        console.log('✅ [DEBUG] User saved to DB successfully');
 
-        console.log('📧 Sending OTP email...');
+        console.log('📧 [DEBUG] Attempting to send OTP email...');
         try {
-            const emailSent = await sendOtpEmail(normalizedEmail, otp);
-            if (!emailSent) console.log('⚠️ sendOtpEmail returned false');
+            await sendOtpEmail(normalizedEmail, otp);
+            console.log('✅ [DEBUG] OTP Email sent');
         } catch (emailErr) {
-            console.error('❌ Email send crashed:', emailErr.message);
+            console.error('❌ [DEBUG] Email service error (continuing):', emailErr.message);
         }
 
-        console.log('🏁 Registration process complete');
+        console.log('🚀 [DEBUG] Sending 201 response to client');
         return res.status(201).json({
             message: 'OTP sent to email',
             email: user.email,
             requireOtp: true
         });
     } catch (error) {
-        console.error('❌ CRITICAL Registration Error:', error);
+        console.error('❌ [FATAL ERROR] Registration process crashed:', error);
         return res.status(500).json({
-            message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-            details: "Check server logs for full stack trace"
+            message: error.message || 'Internal Server Error',
+            details: error.name
         });
     }
 };
