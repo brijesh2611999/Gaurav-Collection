@@ -111,25 +111,25 @@ export default function ContributionBanner() {
 
             {showModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in text-center">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col md:flex-row animate-zoom-in text-left">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[var(--primary)] to-orange-500 z-30" />
+                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] shadow-2xl relative overflow-y-auto flex flex-col md:flex-row animate-zoom-in text-left">
+                        <div className="sticky top-0 left-0 w-full h-2 bg-gradient-to-r from-[var(--primary)] to-orange-500 z-40 shrink-0" />
 
                         <button
                             onClick={() => setShowModal(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors z-30"
+                            className="sticky top-4 self-end mr-4 text-gray-400 hover:text-gray-900 transition-colors z-40 p-1"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
 
-                        <div className="md:w-5/12 p-8 bg-gray-50 flex flex-col items-center justify-center border-r border-gray-100">
+                        <div className="md:w-5/12 p-6 md:p-8 bg-gray-50 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
                             <div className="text-center mb-6">
                                 <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Support Our <span className="text-[var(--primary)]">Art</span></h2>
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mt-2">Scan to Donate</p>
                             </div>
 
-                            <div className="bg-white p-3 rounded-2xl shadow-xl border border-gray-100 w-full max-w-[220px]">
+                            <div className="bg-white p-3 rounded-2xl shadow-xl border border-gray-100 w-full max-w-[180px] md:max-w-[220px]">
                                 <img
                                     src="/images/qr-code.jpg?v=1"
                                     alt="Contribution QR Code"
@@ -142,10 +142,10 @@ export default function ContributionBanner() {
                             </p>
                         </div>
 
-                        <div className="md:w-7/12 p-10 flex flex-col justify-center">
+                        <div className="md:w-7/12 p-6 md:p-10 flex flex-col justify-center">
                             <div className="mb-6">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--primary)] mb-2">Community Contribution</p>
-                                <h3 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">Help Us Grow the <span className="text-[var(--primary)]">Legacy</span></h3>
+                                <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-tight">Help Us Grow the <span className="text-[var(--primary)]">Legacy</span></h3>
                             </div>
 
                             <p className="text-gray-600 text-sm leading-relaxed mb-8">

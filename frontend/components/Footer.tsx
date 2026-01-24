@@ -190,7 +190,7 @@ export default function Footer() {
             {/* Contact Modal */}
             {isContactModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-                    <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
                         <div className="ib-button-red py-6 px-8 flex justify-between items-center text-white">
                             <h2 className="text-2xl font-black uppercase tracking-tighter">Get in Touch</h2>
                             <button
@@ -241,7 +241,7 @@ export default function Footer() {
             {/* Photographer Modal */}
             {isPhotographerModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-                    <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
                         <div className="bg-gray-900 py-6 px-8 flex justify-between items-center text-white">
                             <h2 className="text-2xl font-black uppercase tracking-tighter">Featured Artist</h2>
                             <button
@@ -283,7 +283,7 @@ export default function Footer() {
             {/* Informational Modal */}
             {activeInfoModal && infoModals[activeInfoModal] && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-                    <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
                         <div className="ib-button-red py-4 px-6 flex justify-between items-center text-white">
                             <h2 className="text-xl font-black uppercase tracking-tighter">{infoModals[activeInfoModal].title}</h2>
                             <button onClick={() => setActiveInfoModal(null)} className="p-1 hover:bg-white/10 rounded-full">
