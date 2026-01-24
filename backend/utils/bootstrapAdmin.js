@@ -3,16 +3,17 @@ const User = require("../models/User");
 const admins = [
     {
         name: "Gaurav",
-        email: "admin1@gmail.com",
-        password: "password123",
+        email: "Gauravkaranwal788@gmail.com",
+        password: "password_gaurav",
         role: "admin",
     },
     {
-        name: "Rahul",
-        email: "admin2@gmail.com",
-        password: "password123",
+        name: "Brijesh",
+        email: "bv2611999@gmail.com",
+        password: "password_brijesh",
         role: "admin",
     },
+
 ];
 
 const bootstrapAdmin = async () => {
