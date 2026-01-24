@@ -8,11 +8,33 @@ const bootstrapAdmin = require("./utils/bootstrapAdmin");
 const app = express();
 
 // Middleware
-app.use(express.json());
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*', // Allow specific frontend or all if not set
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            'https://gaurav-collection.vercel.app',
+            'http://localhost:3000',
+        ];
+
+        if (process.env.FRONTEND_URL) {
+            allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
+        }
+
+        // Remove trailing slash from the current origin for comparison
+        const currentOrigin = origin ? origin.replace(/\/$/, '') : '';
+
+        if (!origin || allowedOrigins.includes(currentOrigin)) {
+            callback(null, true);
+        } else {
+            console.log('Blocked by CORS:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.use(express.json());
 
 // Routes
 app.use('/api/images', require('./routes/imageRoutes'));
