@@ -15,7 +15,7 @@ export default function Home() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/images');
+        const response = await fetch('https://gaurav-collection.onrender.com/api/images');
         const data = await response.json();
         if (Array.isArray(data)) {
           setImages(data);
