@@ -1,21 +1,31 @@
 const User = require("../models/User");
 
-const bootstrapAdmin = async () => {
-    const adminExists = await User.findOne({ role: "admin" });
-
-    if (adminExists) {
-        console.log("✅ Admin already exists");
-        return;
-    }
-
-    await User.create({
+const admins = [
+    {
         name: "Gaurav",
-        email: "admin@gmail.com",
+        email: "admin1@gmail.com",
         password: "password123",
         role: "admin",
-    });
+    },
+    {
+        name: "Rahul",
+        email: "admin2@gmail.com",
+        password: "password123",
+        role: "admin",
+    },
+];
 
-    console.log("🚀 Admin user created");
+const bootstrapAdmin = async () => {
+    for (const admin of admins) {
+        const exists = await User.findOne({ email: admin.email });
+
+        if (!exists) {
+            await User.create(admin);
+            console.log(`🚀 Admin created: ${admin.email}`);
+        } else {
+            console.log(`✅ Admin exists: ${admin.email}`);
+        }
+    }
 };
 
 module.exports = bootstrapAdmin;
