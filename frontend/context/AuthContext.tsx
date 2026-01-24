@@ -7,8 +7,7 @@ import { User } from '@/lib/mockData';
 interface AuthContextType {
     user: User | null;
     login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-    register: (name: string, email: string, password: string) => Promise<{ success: boolean; requireOtp?: boolean; message?: string }>;
-    verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; message?: string }>;
+    register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
     googleLogin: (token: string, userInfo?: any) => Promise<{ success: boolean; message?: string }>;
     logout: () => void;
     isAdmin: boolean;
@@ -105,18 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const verifyOtp = async (email: string, otp: string) => {
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/verify-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp })
-            });
-            return await handleAuthResponse(response);
-        } catch (error) {
-            return { success: false, message: 'Verification failed' };
-        }
-    };
+
 
     const googleLogin = async (token: string, userInfo?: any) => {
         try {
@@ -149,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID_HERE"}>
-            <AuthContext.Provider value={{ user, login, register, verifyOtp, googleLogin, logout, isAdmin, loading }}>
+            <AuthContext.Provider value={{ user, login, register, googleLogin, logout, isAdmin, loading }}>
                 {children}
             </AuthContext.Provider>
         </GoogleOAuthProvider>

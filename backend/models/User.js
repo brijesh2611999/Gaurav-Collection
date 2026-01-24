@@ -7,9 +7,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     avatar: { type: String, default: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
-    isVerified: { type: Boolean, default: false },
-    otp: { type: String },
-    otpExpires: { type: Date },
+    isVerified: { type: Boolean, default: true },
     googleId: { type: String },
     createdAt: { type: Date, default: Date.now },
 });

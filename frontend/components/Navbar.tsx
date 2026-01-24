@@ -255,20 +255,12 @@ export default function Navbar() {
 
 // Auth Modal Component
 function AuthModal({ onClose, setBotMood, setBotMessage }: { onClose: () => void, setBotMood: (mood: BotMood) => void, setBotMessage: (msg: string) => void }) {
-    const { login, register, verifyOtp, googleLogin } = useAuth();
-    const [isLogin, setIsLogin] = useState(true);
-    const [step, setStep] = useState<'auth' | 'otp'>('auth');
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [otp, setOtp] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
+    const { googleLogin } = useAuth();
     const [errorMsg, setErrorMsg] = useState('');
 
     const handleGoogleSuccess = async (credentialResponse: any) => {
         setBotMood('thinking');
-        // Decode JWT to get user info for better UX if needed, but context handles it
-        // We pass the token directly
+        setBotMessage('Checking your credentials boss...');
         const result = await googleLogin(credentialResponse.credential);
 
         if (result.success) {
@@ -289,68 +281,12 @@ function AuthModal({ onClose, setBotMood, setBotMessage }: { onClose: () => void
     const handleGoogleError = () => {
         setBotMood('angry');
         setBotMessage('Google login error!');
-    };
-
-    const handleOtpVerify = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setBotMood('thinking');
-        const result = await verifyOtp(email, otp);
-        if (result.success) {
-            setBotMood('happy');
-            setBotMessage('Bas, verify ho gaya! Aaja andar!');
-            setTimeout(() => {
-                onClose();
-                setBotMood('normal');
-                // Check if admin
-            }, 1000);
-        } else {
-            setBotMood('angry');
-            setBotMessage('Galat OTP daala kya? Phir se check kar!');
-            setErrorMsg(result.message || 'Verification Failed');
-        }
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrorMsg('');
-        setBotMood('thinking');
-
-        if (isLogin) {
-            const result = await login(email, password);
-            if (result.success) {
-                setBotMood('happy');
-                setBotMessage('Sahi password bhidu! Welcome back!');
-                setTimeout(() => {
-                    onClose();
-                    setBotMood('normal');
-                    // Redirect logic handled by router or state change
-                }, 1000);
-            } else {
-                setBotMood('angry');
-                setBotMessage('Password galat hai! Dimaag laga!');
-                setErrorMsg(result.message || 'Login Failed');
-            }
-        } else {
-            const result = await register(name, email, password);
-            if (result.success) {
-                if (result.requireOtp) {
-                    setStep('otp');
-                    setBotMood('normal');
-                    setBotMessage('Abhi OTP check kar email pe, jaldi!');
-                } else {
-                    setBotMood('happy');
-                    onClose();
-                }
-            } else {
-                setBotMood('angry');
-                setErrorMsg(result.message || 'Registration Failed');
-            }
-        }
+        setErrorMsg('Google Login Failed. Please try again.');
     };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-lg p-8 max-w-md w-full shadow-2xl relative">
+            <div className="bg-white rounded-lg p-10 max-w-sm w-full shadow-2xl relative">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-gray-900 transition-colors"
@@ -358,151 +294,40 @@ function AuthModal({ onClose, setBotMood, setBotMessage }: { onClose: () => void
                     ×
                 </button>
 
-                <div className="text-center mb-8 pt-4">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 uppercase tracking-tighter">
-                        {step === 'otp' ? 'Verify Account' : (isLogin ? 'Welcome Back!' : 'Join The Club')}
+                <div className="text-center mb-10 pt-4">
+                    <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">
+                        Welcome Boss!
                     </h2>
                     <div className="w-16 h-1 bg-[var(--primary)] mx-auto mt-4 rounded-full" />
+                    <p className="text-gray-500 mt-6 text-sm font-medium">Use your Google account to access the collection instantly.</p>
                 </div>
 
                 {errorMsg && (
-                    <div className="bg-red-50 text-red-500 text-xs font-bold p-3 mb-4 rounded text-center uppercase tracking-wide">
+                    <div className="bg-red-50 text-red-500 text-xs font-bold p-3 mb-6 rounded text-center uppercase tracking-wide">
                         {errorMsg}
                     </div>
                 )}
 
-                {step === 'otp' ? (
-                    <form onSubmit={handleOtpVerify} className="space-y-6">
-                        <div className="text-center text-gray-500 text-sm mb-4">
-                            Enter the code sent to <strong>{email}</strong>
-                        </div>
-                        <div>
-                            <input
-                                type="text"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                                className="w-full px-4 py-3 rounded border border-gray-300 focus:border-[var(--primary)] focus:outline-none text-center text-2xl tracking-[0.5em] font-bold"
-                                placeholder="******"
-                                maxLength={6}
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full py-4 ib-button-red rounded font-bold uppercase tracking-widest shadow-xl text-sm"
-                        >
-                            Verify & Login
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setStep('auth')}
-                            className="w-full text-center text-xs text-gray-400 hover:text-gray-600 font-bold uppercase tracking-widest mt-4"
-                        >
-                            Back to Signup
-                        </button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {!isLogin && (
-                            <div>
-                                <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Full Name</label>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    onFocus={() => setBotMessage('Bhidu, apna naam kya hai re? Bata de!')}
-                                    onBlur={() => setBotMessage('')}
-                                    className="w-full px-4 py-3 rounded border border-gray-300 focus:border-[var(--primary)] focus:outline-none transition-colors text-sm"
-                                    placeholder="John Doe"
-                                    required={!isLogin}
-                                />
-                            </div>
-                        )}
-
-                        <div>
-                            <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                onFocus={() => setBotMessage('Oi Bhidu! Tera e-mail daal re baba!')}
-                                onBlur={() => setBotMessage('')}
-                                className="w-full px-4 py-3 rounded border border-gray-300 focus:border-[var(--primary)] focus:outline-none transition-colors text-sm"
-                                placeholder="name@example.com"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Password</label>
-                            <div className="relative group/pass">
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    onFocus={() => setBotMessage('Password sambhal ke daalna bhidu!')}
-                                    onBlur={() => setBotMessage('')}
-                                    className="w-full px-4 py-3 rounded border border-gray-300 focus:border-[var(--primary)] focus:outline-none transition-colors text-sm pr-12"
-                                    placeholder="••••••••"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 transition-colors"
-                                >
-                                    {showPassword ? (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full py-4 ib-button-red rounded font-bold uppercase tracking-widest shadow-xl text-sm"
-                        >
-                            {isLogin ? 'Login' : 'Create Account'}
-                        </button>
-
-                        <div className="relative flex py-2 items-center">
-                            <div className="flex-grow border-t border-gray-200"></div>
-                            <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-bold uppercase tracking-widest">Or Continue With</span>
-                            <div className="flex-grow border-t border-gray-200"></div>
-                        </div>
-
-                        <div className="flex justify-center">
-                            <GoogleLogin
-                                onSuccess={handleGoogleSuccess}
-                                onError={handleGoogleError}
-                                theme="filled_black"
-                                shape="circle"
-                                text="continue_with"
-                            />
-                        </div>
-                    </form>
-                )}
-
-                {step === 'auth' && (
-                    <div className="mt-8 text-center border-t border-gray-50 pt-8">
-                        <p className="text-sm text-gray-600 font-medium">
-                            {isLogin ? "New to Gaurav Collection?" : 'Already have an account?'}
-                            <button
-                                onClick={() => setIsLogin(!isLogin)}
-                                className="ml-2 text-[var(--primary)] font-bold hover:underline"
-                            >
-                                {isLogin ? 'Sign Up' : 'Login'}
-                            </button>
-                        </p>
+                <div className="flex justify-center flex-col items-center gap-6">
+                    <div className="transform scale-125">
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={handleGoogleError}
+                            theme="filled_black"
+                            shape="circle"
+                            text="continue_with"
+                        />
                     </div>
-                )}
+
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-4">Secure Authentication</p>
+                </div>
+
+                <div className="mt-12 text-center border-t border-gray-50 pt-8">
+                    <p className="text-xs text-gray-400 font-medium leading-relaxed">
+                        By continuing, you agree to our <br />
+                        <span className="text-gray-600 font-bold underline cursor-pointer">Terms of Service</span> and <span className="text-gray-600 font-bold underline cursor-pointer">Privacy Policy</span>
+                    </p>
+                </div>
             </div>
         </div>
     );
