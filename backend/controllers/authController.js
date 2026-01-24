@@ -13,15 +13,26 @@ const generateToken = (id) => {
 // Send OTP Email
 const sendOtpEmail = async (email, otp) => {
     try {
+        console.log('🔗 [DEBUG] Attempting to connect to email server:', process.env.MAIL_HOST);
         const transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST,
-            port: 465,
-            secure: true, // true for 465, false for other ports
+            port: 587, // Port 587 is more reliable on cloud platforms like Render
+            secure: false, // true for 465, false for 587
             auth: {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASS
-            }
+            },
+            connectionTimeout: 10000, // 10 seconds
         });
+
+        // Quick check if the connection to the email server works
+        try {
+            await transporter.verify();
+            console.log('✅ [DEBUG] Transporter verified - ready to send');
+        } catch (verifyErr) {
+            console.error('❌ [DEBUG] Transporter verification failed:', verifyErr.message);
+            // We ignore and try to send anyway, or return false early
+        }
 
         const mailOptions = {
             from: `"Gaurav Collection" <${process.env.MAIL_USER}>`,
@@ -48,11 +59,11 @@ const sendOtpEmail = async (email, otp) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent successfully to ${email}`);
+        const result = await transporter.sendMail(mailOptions);
+        console.log(`✅ [DEBUG] Email sent successfully: ${result.messageId}`);
         return true;
     } catch (error) {
-        console.error('❌ Email send failed:', error);
+        console.error('❌ [DEBUG] sendOtpEmail function failed:', error.message);
         return false;
     }
 };
