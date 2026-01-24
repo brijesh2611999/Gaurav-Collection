@@ -60,19 +60,24 @@ const sendOtpEmail = async (email, otp) => {
 // Register User
 exports.registerUser = async (req, res) => {
     try {
+        console.log('📝 Registration attempt for:', req.body.email);
         const { name, email, password } = req.body;
-        const normalizedEmail = email.toLowerCase();
 
+        if (!email || !password || !name) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        const normalizedEmail = email.toLowerCase();
         const userExists = await User.findOne({ email: normalizedEmail });
 
         if (userExists) {
             if (!userExists.isVerified) {
-                // Resend OTP if user exists but not verified
+                console.log('🔄 User exists but not verified, resending OTP');
                 const otp = Math.floor(100000 + Math.random() * 900000).toString();
                 userExists.otp = otp;
-                userExists.otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
-                userExists.name = name; // Update name if changed
-                userExists.password = password; // Update password if changed
+                userExists.otpExpires = Date.now() + 10 * 60 * 1000;
+                userExists.name = name;
+                userExists.password = password;
                 await userExists.save();
 
                 await sendOtpEmail(normalizedEmail, otp);
@@ -82,6 +87,7 @@ exports.registerUser = async (req, res) => {
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log('🆕 Creating new user');
 
         const user = await User.create({
             name,
@@ -92,15 +98,22 @@ exports.registerUser = async (req, res) => {
             isVerified: false
         });
 
-        await sendOtpEmail(normalizedEmail, otp);
+        console.log('📧 Sending OTP email');
+        const emailSent = await sendOtpEmail(normalizedEmail, otp);
 
-        res.status(201).json({
+        if (!emailSent) {
+            console.log('⚠️ OTP email failed to send, but user was created');
+        }
+
+        console.log('✅ Registration successful, sending response');
+        return res.status(201).json({
             message: 'OTP sent to email',
             email: user.email,
             requireOtp: true
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('❌ Registration Error:', error);
+        return res.status(500).json({ message: error.message });
     }
 };
 
