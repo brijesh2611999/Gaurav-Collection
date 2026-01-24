@@ -13,25 +13,26 @@ const generateToken = (id) => {
 // Send OTP Email
 const sendOtpEmail = async (email, otp) => {
     try {
-        console.log('🔗 [DEBUG] Attempting to connect to email server:', process.env.MAIL_HOST);
+        console.log('🔗 [DEBUG] Attempting Gmail Service connection...');
         const transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: 587, // Port 587 is more reliable on cloud platforms like Render
-            secure: false, // true for 465, false for 587
+            service: 'gmail', // Let Nodemailer handle the host/port/secure settings
             auth: {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASS
             },
-            connectionTimeout: 10000, // 10 seconds
+            tls: {
+                // This helps avoid connection issues on some hosting providers
+                rejectUnauthorized: false,
+                minVersion: 'TLSv1.2'
+            }
         });
 
-        // Quick check if the connection to the email server works
+        // Quick check if the connection works
         try {
             await transporter.verify();
-            console.log('✅ [DEBUG] Transporter verified - ready to send');
+            console.log('✅ [DEBUG] Gmail Service verified - ready to send');
         } catch (verifyErr) {
-            console.error('❌ [DEBUG] Transporter verification failed:', verifyErr.message);
-            // We ignore and try to send anyway, or return false early
+            console.error('❌ [DEBUG] Gmail Service verification failed:', verifyErr.message);
         }
 
         const mailOptions = {
