@@ -1,0 +1,259 @@
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const nodemailer = require('nodemailer');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Generate Token
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
+
+// Send OTP Email
+const sendOtpEmail = async (email, otp) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            host: process.env.MAIL_HOST,
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: `"Gaurav Collection" <${process.env.MAIL_USER}>`,
+            to: email,
+            subject: 'Verify Your Account - Gaurav Collection',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h1 style="color: #FF0000; margin: 0;">Gaurav Collection</h1>
+                    </div>
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center;">
+                        <h2 style="color: #333; margin-top: 0;">Verification Code</h2>
+                        <p style="color: #666; font-size: 16px;">Please use the following OTP to verify your account:</p>
+                        <div style="font-size: 32px; font-weight: bold; color: #FF0000; letter-spacing: 5px; margin: 20px 0;">
+                            ${otp}
+                        </div>
+                        <p style="color: #999; font-size: 14px;">This code will expire in 10 minutes.</p>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #aaa;">
+                        <p>If you didn't request this code, you can ignore this email.</p>
+                        <p>&copy; ${new Date().getFullYear()} Gaurav Collection. All rights reserved.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent successfully to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Email send failed:', error);
+        return false;
+    }
+};
+
+// Register User
+exports.registerUser = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        const normalizedEmail = email.toLowerCase();
+
+        const userExists = await User.findOne({ email: normalizedEmail });
+
+        if (userExists) {
+            if (!userExists.isVerified) {
+                // Resend OTP if user exists but not verified
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                userExists.otp = otp;
+                userExists.otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+                userExists.name = name; // Update name if changed
+                userExists.password = password; // Update password if changed
+                await userExists.save();
+
+                await sendOtpEmail(normalizedEmail, otp);
+                return res.status(200).json({ message: 'OTP sent to email', email: normalizedEmail, requireOtp: true });
+            }
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const user = await User.create({
+            name,
+            email: normalizedEmail,
+            password,
+            otp,
+            otpExpires: Date.now() + 10 * 60 * 1000,
+            isVerified: false
+        });
+
+        await sendOtpEmail(normalizedEmail, otp);
+
+        res.status(201).json({
+            message: 'OTP sent to email',
+            email: user.email,
+            requireOtp: true
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Verify OTP
+exports.verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const normalizedEmail = email.toLowerCase();
+
+        const user = await User.findOne({
+            email: normalizedEmail,
+            otp,
+            otpExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        user.isVerified = true;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+            token: generateToken(user._id),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Login User
+exports.loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const normalizedEmail = email.toLowerCase();
+
+        const user = await User.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        if (!user.isVerified) {
+            return res.status(401).json({ message: 'Account not verified. Please signup again to verify.' });
+        }
+
+        const isMatch = await user.comparePassword(password);
+        if (isMatch) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                role: user.role,
+                token: generateToken(user._id),
+            });
+        } else {
+            res.status(401).json({ message: 'Invalid email or password' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Google Login
+exports.googleLogin = async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        // Verify Google token
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const { name, email, picture, sub: googleId } = ticket.getPayload();
+
+        if (!email) return res.status(400).json({ message: 'Email required' });
+
+        const normalizedEmail = email.toLowerCase();
+        let user = await User.findOne({ email: normalizedEmail });
+
+        if (user) {
+            // Link google ID if not linked
+            if (!user.googleId) {
+                user.googleId = googleId;
+                await user.save();
+            }
+            // Auto verify if not
+            if (!user.isVerified) {
+                user.isVerified = true;
+                await user.save();
+            }
+        } else {
+            // Create new Google user
+            user = await User.create({
+                name,
+                email: normalizedEmail,
+                password: await require('bcryptjs').hash(Math.random().toString(36), 10), // Random password
+                avatar: picture,
+                googleId,
+                isVerified: true,
+                role: 'user'
+            });
+        }
+
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+            token: generateToken(user._id),
+        });
+
+    } catch (error) {
+        console.error('Google Login Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get User Profile
+exports.getUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (user) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+                role: user.role,
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get All Users (Admin only)
+exports.getUsers = async (req, res) => {
+    try {
+        const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
