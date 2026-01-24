@@ -60,36 +60,45 @@ const sendOtpEmail = async (email, otp) => {
 // Register User
 exports.registerUser = async (req, res) => {
     try {
-        console.log('📝 Registration attempt for:', req.body.email);
+        console.log('📝 Registration start:', req.body.email);
         const { name, email, password } = req.body;
 
         if (!email || !password || !name) {
+            console.log('⚠️ Missing fields');
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
         const normalizedEmail = email.toLowerCase();
+        console.log('🔍 Checking if user exists:', normalizedEmail);
         const userExists = await User.findOne({ email: normalizedEmail });
 
         if (userExists) {
             if (!userExists.isVerified) {
-                console.log('🔄 User exists but not verified, resending OTP');
+                console.log('🔄 User exists but not verified, updating and resending OTP');
                 const otp = Math.floor(100000 + Math.random() * 900000).toString();
                 userExists.otp = otp;
                 userExists.otpExpires = Date.now() + 10 * 60 * 1000;
                 userExists.name = name;
                 userExists.password = password;
                 await userExists.save();
+                console.log('✅ User updated, sending email');
 
-                await sendOtpEmail(normalizedEmail, otp);
+                try {
+                    await sendOtpEmail(normalizedEmail, otp);
+                } catch (emailErr) {
+                    console.error('📧 Email resend failed but continuing:', emailErr.message);
+                }
+
                 return res.status(200).json({ message: 'OTP sent to email', email: normalizedEmail, requireOtp: true });
             }
+            console.log('🚫 User already exists');
             return res.status(400).json({ message: 'User already exists' });
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log('🆕 Creating new user');
+        console.log('🆕 Creating new user doc...');
 
-        const user = await User.create({
+        const user = new User({
             name,
             email: normalizedEmail,
             password,
@@ -98,22 +107,30 @@ exports.registerUser = async (req, res) => {
             isVerified: false
         });
 
-        console.log('📧 Sending OTP email');
-        const emailSent = await sendOtpEmail(normalizedEmail, otp);
+        await user.save();
+        console.log('✅ User saved to DB');
 
-        if (!emailSent) {
-            console.log('⚠️ OTP email failed to send, but user was created');
+        console.log('📧 Sending OTP email...');
+        try {
+            const emailSent = await sendOtpEmail(normalizedEmail, otp);
+            if (!emailSent) console.log('⚠️ sendOtpEmail returned false');
+        } catch (emailErr) {
+            console.error('❌ Email send crashed:', emailErr.message);
         }
 
-        console.log('✅ Registration successful, sending response');
+        console.log('🏁 Registration process complete');
         return res.status(201).json({
             message: 'OTP sent to email',
             email: user.email,
             requireOtp: true
         });
     } catch (error) {
-        console.error('❌ Registration Error:', error);
-        return res.status(500).json({ message: error.message });
+        console.error('❌ CRITICAL Registration Error:', error);
+        return res.status(500).json({
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+            details: "Check server logs for full stack trace"
+        });
     }
 };
 
