@@ -106,7 +106,7 @@ function LibraryView({ isAdmin }: { isAdmin: boolean }) {
 
             {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {filteredImages.map((image, idx) => (
+                    {filteredImages.map((image) => (
                         <div key={image.id} className="relative group">
                             <ImageCard image={image} allowDownload={false} />
                             <button
@@ -127,48 +127,70 @@ function LibraryView({ isAdmin }: { isAdmin: boolean }) {
                 </div>
             ) : (
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="px-8 py-5 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Preview</th>
-                                <th className="px-8 py-5 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Details</th>
-                                <th className="px-8 py-5 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Category</th>
-
-                                <th className="px-8 py-5 text-right text-xs font-black text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {filteredImages.map((image, idx) => (
-                                <tr key={image.id} className="group hover:bg-gray-50/50 transition-all" style={{ animationDelay: `${idx * 50}ms` }}>
-                                    <td className="px-8 py-4">
-                                        <div className="w-20 h-14 rounded-xl overflow-hidden shadow-sm border border-gray-100 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
-                                            <img src={image.url} alt={image.title} className="w-full h-full object-cover" />
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <p className="font-bold text-gray-900 text-sm group-hover:text-[var(--primary)] transition-colors">{image.title}</p>
-                                        <p className="text-xs text-gray-500 font-medium">{image.author}</p>
-                                    </td>
-                                    <td className="px-8 py-4">
-                                        <span className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs font-bold uppercase">
-                                            {image.category}
-                                        </span>
-                                    </td>
-
-                                    <td className="px-8 py-4 text-right">
-                                        <button
-                                            onClick={() => handleDelete(image.id)}
-                                            className="p-3 rounded-xl text-gray-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </td>
+                    {/* Responsive List / Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th className="px-8 py-5 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Preview</th>
+                                    <th className="px-8 py-5 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Details</th>
+                                    <th className="px-8 py-5 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th className="px-8 py-5 text-right text-xs font-black text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {filteredImages.map((image) => (
+                                    <tr key={image.id} className="group hover:bg-gray-50/50 transition-all">
+                                        <td className="px-8 py-4">
+                                            <div className="w-20 h-14 rounded-xl overflow-hidden shadow-sm border border-gray-100 group-hover:scale-110 transition-all duration-300">
+                                                <img src={image.url} alt={image.title} className="w-full h-full object-cover" />
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <p className="font-bold text-gray-900 text-sm group-hover:text-[var(--primary)] transition-colors">{image.title}</p>
+                                            <p className="text-xs text-gray-500 font-medium">{image.author}</p>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <span className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs font-bold uppercase">
+                                                {image.category}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-4 text-right">
+                                            <button
+                                                onClick={() => handleDelete(image.id)}
+                                                className="p-3 rounded-xl text-gray-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Card List (Hidden on Desktop) */}
+                    <div className="md:hidden divide-y divide-gray-50">
+                        {filteredImages.map((image) => (
+                            <div key={image.id} className="p-4 flex items-center gap-4">
+                                <img src={image.url} alt={image.title} className="w-20 h-20 rounded-xl object-cover shadow-sm shrink-0" />
+                                <div className="flex-grow min-w-0">
+                                    <p className="font-bold text-gray-900 text-sm truncate">{image.title}</p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{image.category}</p>
+                                </div>
+                                <button
+                                    onClick={() => handleDelete(image.id)}
+                                    className="p-3 bg-red-50 text-red-500 rounded-xl active:bg-red-500 active:text-white transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
@@ -282,7 +304,7 @@ function UploadView({ user }: { user: any }) {
                             required
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category *</label>
                             <select
@@ -355,7 +377,7 @@ export default function AdminPage() {
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
 
-            <div className="flex-grow pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+            <div className="flex-grow pt-32 md:pt-40 pb-20 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
 
                     {/* Header */}

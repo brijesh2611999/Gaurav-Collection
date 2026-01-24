@@ -211,6 +211,17 @@ export default function Navbar() {
                             >
                                 Browse Registry
                             </Link>
+
+                            {isAdmin && (
+                                <Link
+                                    href="/admin"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-[var(--primary)] bg-red-50 rounded-lg mx-4"
+                                >
+                                    Admin Dashboard 🕶️
+                                </Link>
+                            )}
+
                             <Link
                                 href="/browse"
                                 onClick={() => setIsMobileMenuOpen(false)}
@@ -222,7 +233,13 @@ export default function Navbar() {
                             <div className="pt-4 px-4 border-t border-gray-50 flex items-center justify-between">
                                 {user ? (
                                     <div className="flex items-center gap-4">
-                                        <img src={user.avatar} className="w-10 h-10 rounded-full border-2 border-[var(--primary)] text-white" />
+                                        {user.avatar ? (
+                                            <img src={user.avatar} className="w-10 h-10 rounded-full border-2 border-[var(--primary)] text-white" />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                                <span className="text-sm font-bold text-gray-600">{user.name?.charAt(0)}</span>
+                                            </div>
+                                        )}
                                         <div>
                                             <p className="font-bold text-gray-900">{user.name}</p>
                                             <button onClick={logout} className="text-xs text-[var(--primary)] font-bold uppercase">Logout</button>
