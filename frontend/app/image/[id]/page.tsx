@@ -241,7 +241,7 @@ export default function ImageDetailPage() {
             {/* Full Screen Zoom Overlay */}
             {isZoomed && (
                 <div
-                    className="fixed inset-0 z-[200] bg-black/98 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-fade-in"
+                    className="fixed inset-0 z-[10000] bg-black/98 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-fade-in"
                     onClick={() => setIsZoomed(false)}
                 >
                     {/* Top Toolbar */}

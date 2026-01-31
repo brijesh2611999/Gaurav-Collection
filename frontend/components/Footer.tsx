@@ -52,10 +52,10 @@ export default function Footer() {
         role: 'Founder & Head Photographer',
         email: 'Gauravkaranwal788@gmail.com',
         phone: '+91 98765 43210',
-        location: 'Delhi, India',
-        district: 'Delhi',
-        state: 'Delhi',
-        image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop'
+        location: 'Haridwar, Uttarakhand, India',
+        district: 'Haridwar',
+        state: 'Uttarakhand',
+        image: '/images/gaurav-profile.jpg'
     };
 
     return (
