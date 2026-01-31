@@ -82,7 +82,7 @@ export default function ContributionBanner() {
                 </div>
             )}
 
-            <div className="fixed bottom-6 left-6 z-[100] animate-bounce-subtle">
+            <div className="fixed bottom-6 left-6 z-[9990] animate-bounce-subtle">
                 <div
                     onClick={() => setShowModal(true)}
                     className="group relative flex items-center gap-3 bg-white border border-gray-100 p-2 pr-6 rounded-full shadow-2xl hover:shadow-[0_20px_50px_rgba(239,68,68,0.2)] transition-all duration-500 hover:-translate-y-1 cursor-pointer"
@@ -110,20 +110,20 @@ export default function ContributionBanner() {
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in text-center">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in text-center">
                     <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] shadow-2xl relative overflow-y-auto flex flex-col md:flex-row animate-zoom-in text-left">
-                        <div className="sticky top-0 left-0 w-full h-2 bg-gradient-to-r from-[var(--primary)] to-orange-500 z-40 shrink-0" />
+                        <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[var(--primary)] to-orange-500 z-40" />
 
                         <button
                             onClick={() => setShowModal(false)}
-                            className="sticky top-4 self-end mr-4 text-gray-400 hover:text-gray-900 transition-colors z-40 p-1"
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors z-40 p-1"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
 
-                        <div className="md:w-5/12 p-6 md:p-8 bg-gray-50 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
+                        <div className="md:w-5/12 p-6 md:p-8 bg-gray-50 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100 mt-6 md:mt-0">
                             <div className="text-center mb-6">
                                 <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Support Our <span className="text-[var(--primary)]">Art</span></h2>
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mt-2">Scan to Donate</p>
