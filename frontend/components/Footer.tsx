@@ -55,7 +55,7 @@ export default function Footer() {
         location: 'Haridwar, Uttarakhand, India',
         district: 'Haridwar',
         state: 'Uttarakhand',
-        image: '/images/gaurav-profile.jpg'
+        image: '/images/gaurav-profile-updated.jpg'
     };
 
     return (
